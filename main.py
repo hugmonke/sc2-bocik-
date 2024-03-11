@@ -90,6 +90,7 @@ class GigaBot(BotAI):
                     enemies_inrange = self.enemy_units.filter(marine.target_in_range)
                     
                     if enemies_inrange:
+                        #priorytet na baneling bo oneshotuja oddzialy
                         filtered_enemy_inrange = enemies_inrange.of_type(UnitTypeId.BANELING)
                         if not filtered_enemy_inrange:
                             filtered_enemy_inrange = max(enemies_inrange, key = lambda enemy: enemy.ground_dps)
