@@ -75,16 +75,14 @@ class GigaBot(BotAI):
         
         
     def barracks_points_to_build_addon(self, sp_position: Point2) -> List[Point2]:
-        """ Return all points that need to be checked when trying to build an addon. Returns 4 points. """
+        """ zwraca wszystkie pola ktore musza byc sprawdzone by zbudowac rozszerzenie, zwraca 4 pola """
         addon_offset: Point2 = Point2((2.5, -0.5))
         addon_position: Point2 = sp_position + addon_offset
-        addon_points = [
-            (addon_position + Point2((x - 0.5, y - 0.5))).rounded for x in range(0, 2) for y in range(0, 2)
-        ]
+        addon_points = [(addon_position + Point2((x - 0.5, y - 0.5))).rounded for x in range(0, 2) for y in range(0, 2)]
         return addon_points
         
     def barracks_land_positions(self, sp_position: Point2) -> List[Point2]:
-            """ Return all points that need to be checked when trying to land at a location where there is enough space to build an addon. Returns 13 points. """
+            """ zwraca wszystkie pola potrzebne do sprawdzenia by wyladowac w wolnym miejscu, zwraca 13 pol """
             land_positions = [(sp_position + Point2((x, y))).rounded for x in range(-1, 2) for y in range(-1, 2)]
             return land_positions + self.barracks_points_to_build_addon(sp_position)    
             
@@ -93,8 +91,7 @@ class GigaBot(BotAI):
         for sp in self.structures(UnitTypeId.BARRACKSFLYING).idle:
             possible_land_positions_offset = sorted(
                 (Point2((x, y)) for x in range(-10, 10) for y in range(-10, 10)),
-                key=lambda point: point.x**2 + point.y**2,
-                )
+                key=lambda point: point.x**2 + point.y**2)
             offset_point: Point2 = Point2((-0.5, -0.5))
             possible_land_positions = (sp.position.rounded + offset_point + p for p in possible_land_positions_offset)
             for target_land_position in possible_land_positions:
@@ -102,7 +99,7 @@ class GigaBot(BotAI):
                 if all(
                     self.in_map_bounds(land_pos) and self.in_placement_grid(land_pos)
                     and self.in_pathing_grid(land_pos) for land_pos in land_and_addon_points
-                ):
+                    ):
                     sp(AbilityId.LAND, target_land_position)
                     break
 
@@ -114,7 +111,7 @@ class GigaBot(BotAI):
                 if all(
                     self.in_map_bounds(addon_point) and self.in_placement_grid(addon_point)
                     and self.in_pathing_grid(addon_point) for addon_point in addon_points
-                ):
+                    ):
                     sp.build(UnitTypeId.BARRACKSTECHLAB)
                 else:
                     sp(AbilityId.LIFT)
