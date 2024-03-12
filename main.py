@@ -227,6 +227,7 @@ class GigaBot(BotAI):
                     unit.attack(filtered_enemy_inrange)
 
         #for unit in self.units(UnitTypeId.MARINE).idle:
+        #moze i wolne ale dziala
         for unit in self.units.idle:
             if unit == UnitTypeId.MEDIVAC:
                 unit.move(random.choice(self.units(UnitTypeId.MARINE)))
