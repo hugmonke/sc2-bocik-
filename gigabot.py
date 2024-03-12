@@ -27,7 +27,7 @@ The comments are meant for me to describe what a piece of code does so I can con
 
 
 #12.03.2024
-# bot daje sobie rade z zergami na hardzie
+# bot daje sobie okazjonalnie rade z zergami na hardzie
 # wymagane poprawki kolejnosci budowy
 # cc musi odlatywac jak juz nie ma mineralow ani wespanu
 # problem nadmiaru scv musi byc szybciej rozwiazywany, czasami w ogole nie dziala 
