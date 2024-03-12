@@ -162,7 +162,7 @@ class GigaBot(BotAI):
             for center in self.townhalls(UnitTypeId.COMMANDCENTER).ready:
                 gas_deposits = self.vespene_geyser.closer_than(12.0, center)
                 for gas_depo in gas_deposits:
-                    if not self.can_afford(UnitTypeId.REFINERY) and self.structures(UnitTypeId).amount > 3:
+                    if not self.can_afford(UnitTypeId.REFINERY) and self.structures(UnitTypeId).amount > 2:
                         break
                     worker = self.select_build_worker(gas_depo.position)
                     if worker is None:
@@ -184,14 +184,14 @@ class GigaBot(BotAI):
     #na razie skupiamy sie na marines, medievacach i maruderach
     async def army_buildings(self):
         center = self.townhalls(UnitTypeId.COMMANDCENTER).first
-        if self.can_afford(UnitTypeId.BARRACKS) and self.structures(UnitTypeId.BARRACKS).amount/self.structures(UnitTypeId.COMMANDCENTER).amount < 1:
+        if self.can_afford(UnitTypeId.BARRACKS) and self.structures(UnitTypeId.BARRACKS).amount/self.structures(UnitTypeId.COMMANDCENTER).amount < 2:
             await self.build(UnitTypeId.BARRACKS, near=center.position.towards(self.game_info.map_center, random.randint(5,15)))
         if self.tech_requirement_progress(UnitTypeId.FACTORY) == 1:    
             if self.can_afford(UnitTypeId.FACTORY) and self.structures(UnitTypeId.FACTORY).amount < 1 and self.structures(UnitTypeId.COMMANDCENTER).amount > 1:
-                await self.build(UnitTypeId.FACTORY, near=center.position.towards(self.game_info.map_center, random.randint(15,20)))    
+                await self.build(UnitTypeId.FACTORY, near=center.position.towards(self.game_info.map_center, random.randint(10,16)))    
         if self.tech_requirement_progress(UnitTypeId.STARPORT) == 1:    
             if self.can_afford(UnitTypeId.STARPORT) and self.structures(UnitTypeId.STARPORT).amount < 1 and self.structures(UnitTypeId.COMMANDCENTER).amount > 1:
-                await self.build(UnitTypeId.STARPORT, near=center.position.towards(self.game_info.map_center, random.randint(20,25)))
+                await self.build(UnitTypeId.STARPORT, near=center.position.towards(self.game_info.map_center, random.randint(12,18)))
         
     async def army_buildings_expansions(self):
         if self.structures(UnitTypeId.BARRACKS).ready and self.structures(UnitTypeId.BARRACKS).amount > 1:
