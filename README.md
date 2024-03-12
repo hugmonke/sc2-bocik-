@@ -1,4 +1,4 @@
-# WIP
+# WIP STARCRAFT 2 AI
 
 The working Bot is written in file main.py.
 It is currently able to defeat HARD Zerg AI.
