@@ -32,6 +32,8 @@ The comments are meant for me to describe what a piece of code does so I can con
 # cc musi odlatywac jak juz nie ma mineralow ani wespanu
 # problem nadmiaru scv musi byc szybciej rozwiazywany, czasami w ogole nie dziala 
 # baraki bez sensu nad soba lewituja - probuja wyladowac a akurat odpala sie skrypt zeby zbudowac kolejne w tym samym miejscu (chyba)
+# dodac lower depo jak sie depo zbuduje
+# za malo barakow
 class GigaBot(BotAI):
     
     def select_target(self):
