@@ -182,13 +182,13 @@ class GigaBot(BotAI):
     async def army_buildings(self):
         center = self.townhalls(UnitTypeId.COMMANDCENTER).first
         if self.can_afford(UnitTypeId.BARRACKS) and self.structures(UnitTypeId.BARRACKS).amount/self.structures(UnitTypeId.COMMANDCENTER).amount < 1:
-            await self.build(UnitTypeId.BARRACKS, near=center.position.towards(self.game_info.map_center, random.randint((5,15))))
+            await self.build(UnitTypeId.BARRACKS, near=center.position.towards(self.game_info.map_center, random.randint(5,15)))
         if self.tech_requirement_progress(UnitTypeId.FACTORY) == 1:    
             if self.can_afford(UnitTypeId.FACTORY) and self.structures(UnitTypeId.FACTORY).amount < 1 and self.structures(UnitTypeId.COMMANDCENTER).amount > 1:
-                await self.build(UnitTypeId.FACTORY, near=center.position.towards(self.game_info.map_center, random.randint((15,20))))    
+                await self.build(UnitTypeId.FACTORY, near=center.position.towards(self.game_info.map_center, random.randint(15,20)))    
         if self.tech_requirement_progress(UnitTypeId.STARPORT) == 1:    
             if self.can_afford(UnitTypeId.STARPORT) and self.structures(UnitTypeId.STARPORT).amount < 1 and self.structures(UnitTypeId.COMMANDCENTER).amount > 1:
-                await self.build(UnitTypeId.STARPORT, near=center.position.towards(self.game_info.map_center, random.randint((20,25))))
+                await self.build(UnitTypeId.STARPORT, near=center.position.towards(self.game_info.map_center, random.randint(20,25)))
         
     async def army_buildings_expansions(self):
         if self.structures(UnitTypeId.BARRACKS).ready and self.structures(UnitTypeId.BARRACKS).amount > 1:
@@ -227,7 +227,6 @@ class GigaBot(BotAI):
                     unit.attack(filtered_enemy_inrange)
 
         #for unit in self.units(UnitTypeId.MARINE).idle:
-        #moze i wolne ale dziala
         for unit in self.units.idle:
             if unit == UnitTypeId.MEDIVAC:
                 unit.move(random.choice(self.units(UnitTypeId.MARINE)))
