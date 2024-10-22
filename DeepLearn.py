@@ -1,10 +1,7 @@
 import random
 import math
 import numpy as np
-import sys
-import pickle
 import time
-import sc2
 import cv2
 import keras
 from sc2.bot_ai import BotAI
@@ -13,15 +10,11 @@ from sc2 import maps, position
 from sc2.main import run_game
 from sc2.player import Bot, Computer
 from sc2.ids.unit_typeid import UnitTypeId
-from sc2.unit import Unit
-from sc2.units import Units
-#from sc2.constants import MARINE, COMMANDCENTER, MARAUDER
 from sc2.position import Point2, Point3
 from sc2.ids.ability_id import AbilityId
 from typing import List, Tuple
 import random
-import asyncio
-#np.set_printoptions(threshold=sys.maxsize)
+
 
 """
 Bot created with help of guides and sources of burnysc and sentdex.
@@ -186,18 +179,24 @@ class GigaBot(BotAI):
                     worker.build(UnitTypeId.REFINERY, gas_depo)
                         
     async def scout(self):
-        if len(self.units(UnitTypeId.REAPER)) > 0:
-            scout = self.units(UnitTypeId.REAPER)[0]
+        if self.timetime > 40 and self.timetime < 60:
+            scout = self.units(UnitTypeId.SCV).random
             if scout.is_idle:
-                enemy_location = self.enemy_start_locations[0]
-                move_to = self.random_position_variance(enemy_location)
-                scout.move(move_to)
-
+                    enemy_location = self.enemy_start_locations[0]
+                    move_to = self.random_position_variance(enemy_location)
+                    scout.move(move_to)
         else:
-            for barracks in self.structures(UnitTypeId.BARRACKS).ready.idle:
-                if self.can_afford(UnitTypeId.REAPER) and self.supply_left > 0:
-                    barracks.train(UnitTypeId.REAPER)
-        
+            if len(self.units(UnitTypeId.REAPER)) > 0:
+                scout = self.units(UnitTypeId.REAPER)[0]
+                if scout.is_idle:
+                    enemy_location = self.enemy_start_locations[0]
+                    move_to = self.random_position_variance(enemy_location)
+                    scout.move(move_to)
+            else:
+                for barracks in self.structures(UnitTypeId.BARRACKS).ready:
+                    if self.can_afford(UnitTypeId.REAPER) and self.supply_left > 0:
+                        barracks.train(UnitTypeId.REAPER)
+            
     async def build_depos(self):
         if self.supply_left < 6 and self.supply_used >= 14 and not self.already_pending(UnitTypeId.SUPPLYDEPOT):
             cc = self.townhalls(UnitTypeId.COMMANDCENTER).random
@@ -231,7 +230,7 @@ class GigaBot(BotAI):
         else:
             if self.tech_requirement_progress(UnitTypeId.STARPORT) and self.can_afford(UnitTypeId.STARPORT) and self.structures(UnitTypeId.STARPORT).amount/self.structures(UnitTypeId.COMMANDCENTER).amount < 1:
                 try:
-                    await self.build(UnitTypeId.STARPORT, near=cc.position.towards(self.game_info.map_center, random.randint(5,25)))
+                    await self.build(UnitTypeId.STARPORT, near=cc.position.towards(self.game_info.map_center, random.randint(5,35)))
                 except:
                     return None
                 
@@ -244,7 +243,7 @@ class GigaBot(BotAI):
         else:
             if self.tech_requirement_progress(UnitTypeId.FACTORY) and self.can_afford(UnitTypeId.FACTORY) and self.structures(UnitTypeId.FACTORY).amount/self.structures(UnitTypeId.COMMANDCENTER).amount < 1:
                 try:
-                    await self.build(UnitTypeId.FACTORY, near=cc.position.towards(self.game_info.map_center, random.randint(5,25)))
+                    await self.build(UnitTypeId.FACTORY, near=cc.position.towards(self.game_info.map_center, random.randint(5,30)))
                 except:
                     return None
                 
@@ -472,25 +471,29 @@ class GigaBot(BotAI):
                 marauder_weight = 1
                 scv_weight = 1
                 wait_weight = 1
+                factory_weight = 1
+                starport_weight = 1
+                medivac_weight = 1
 
                 prediction = self.model.predict([self.flipped.reshape([-1, 176, 200, 1])])
-                weights = [depos_weight, barracks_weight, refinery_weight, expand_weight, upgrade_weight, marine_weight, marauder_weight, scv_weight, 1, 1, 1, 1, 1, wait_weight, 1]
+                weights = [depos_weight, barracks_weight, refinery_weight, expand_weight, upgrade_weight, marine_weight, marauder_weight, scv_weight, 1, 1, 1, factory_weight, starport_weight, wait_weight, medivac_weight]
                 weighted_prediction = prediction[0]*weights
                 choice = np.argmax(weighted_prediction)
                 print('Choice:', choices[choice])
             else:
-                depos_weight = 3#1
-                barracks_weight = 3#1
+                depos_weight = 1#1
+                barracks_weight = 1#1
                 refinery_weight = 1#1
-                expand_weight = 3#2
+                expand_weight = 2#2
                 upgrade_weight = 2#1
-                marine_weight = 3#2
+                marine_weight = 2#2
                 marauder_weight = 2#1
-                scv_weight = 3#2
+                scv_weight = 2#2
                 wait_weight = 2#1
-                factory_weight = 2#1
-                starport_weight = 2#1
-                choice_weights = depos_weight*[0]+barracks_weight*[1]+refinery_weight*[2]+expand_weight*[3]+upgrade_weight*[4]+marine_weight*[5]+marauder_weight*[6]+scv_weight*[7]+1*[8]+1*[9]+1*[10]+factory_weight*[11]+starport_weight*[12]+wait_weight*[13]+1*[14]
+                factory_weight = 1#1
+                starport_weight = 1#1
+                medivac_weight = 1#1
+                choice_weights = depos_weight*[0]+barracks_weight*[1]+refinery_weight*[2]+expand_weight*[3]+upgrade_weight*[4]+marine_weight*[5]+marauder_weight*[6]+scv_weight*[7]+1*[8]+1*[9]+1*[10]+factory_weight*[11]+starport_weight*[12]+wait_weight*[13]+medivac_weight*[14]
                 choice = random.choice(choice_weights)
 
             try:
@@ -507,6 +510,6 @@ USING_MODEL = False
 if USING_MODEL: 
     print("USING MODEL") 
 else: print("USING RANDOM CHOICES")
-#while True:
-run_game(maps.get("AbyssalReefLE"), [Bot(Race.Terran, GigaBot(use_model=USING_MODEL)), Computer(Race.Zerg, Difficulty.Medium)], realtime=False)
+while True:
+    run_game(maps.get("AbyssalReefLE"), [Bot(Race.Terran, GigaBot(use_model=USING_MODEL)), Computer(Race.Zerg, Difficulty.Medium)], realtime=False)
 
