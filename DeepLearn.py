@@ -53,7 +53,9 @@ class GigaBot(BotAI):
                         9: self.attack_enem_struct,
                         10: self.attack_enem_units,
                         11: self.build_factory,
-                        12: self.build_starport}
+                        12: self.build_starport,
+                        13: self.wait,
+                        14: self.train_medievac}
         if self.use_model:
             print("Using model: ON")
             self.model = keras.models.load_model("GIGABOT_epoch_lr_5_0.001_V1.keras")
@@ -197,12 +199,12 @@ class GigaBot(BotAI):
                     barracks.train(UnitTypeId.REAPER)
         
     async def build_depos(self):
-
         if self.supply_left < 6 and self.supply_used >= 14 and not self.already_pending(UnitTypeId.SUPPLYDEPOT):
             cc = self.townhalls(UnitTypeId.COMMANDCENTER).random
             if self.can_afford(UnitTypeId.SUPPLYDEPOT):
                 await self.build(UnitTypeId.SUPPLYDEPOT, near=cc.position.towards(self.game_info.map_center, 8))
-    
+                depo = self.structures(UnitTypeId.SUPPLYDEPOT)[-1]
+                depo(AbilityId.MORPH_SUPPLYDEPOT_LOWER)
     async def train_scv(self):
         
         if self.can_feed(UnitTypeId.SCV) and self.workers.amount < self.MAX_WORKERS:
@@ -260,15 +262,19 @@ class GigaBot(BotAI):
                     return None
                 
     async def train_marine(self):
-        for barrack in self.structures(UnitTypeId.BARRACKS).ready.idle:
+        for barrack in self.structures(UnitTypeId.BARRACKS).ready:
             if self.can_afford(UnitTypeId.MARINE) and self.can_feed(UnitTypeId.MARINE):
                 barrack.train(UnitTypeId.MARINE)
 
     async def train_marauder(self):
-        for barrack in self.structures(UnitTypeId.BARRACKS).ready.idle:
+        for barrack in self.structures(UnitTypeId.BARRACKS).ready:
             if barrack.has_techlab and self.can_afford(UnitTypeId.MARAUDER) and self.can_feed(UnitTypeId.MARAUDER):
                 barrack.train(UnitTypeId.MARAUDER)
-    
+
+    async def train_medievac(self):
+        for sp in self.structures(UnitTypeId.STARPORT).ready:
+            if self.can_afford(UnitTypeId.MEDIVAC) and self.can_feed(UnitTypeId.MEDIVAC):
+                sp.train(UnitTypeId.MEDIVAC)
     async def expand(self):
         if self.townhalls.amount < 3 and self.can_afford(UnitTypeId.COMMANDCENTER):
             await self.expand_now()
@@ -404,29 +410,36 @@ class GigaBot(BotAI):
 
         if not HEADLESS:
             if self.use_model:
-                #cv2.imshow(resized)
+                cv2.imshow("using model", resized)
                 cv2.waitKey(1)
             else:
-                #cv2.imshow(resized)
+                cv2.imshow("random", resized)
                 cv2.waitKey(1)
 
     async def wait(self):
-        wait = random.randrange(5, 100)
+        wait = random.randrange(5, 15)
         self.time_to_action = self.timetime + wait
 
+    def assign_medivac(self):
+        for med in self.units(UnitTypeId.MEDIVAC).idle:
+            med.move(random.choice(self.units(UnitTypeId.MARINE)))
+
     async def attack_enem_units(self):
+        self.assign_medivac()
         if len(self.all_enemy_units) > 0:
             target = self.all_enemy_units.closest_to(self.townhalls.random)
             if target:
                 for idle_army in self.units.idle:
                     idle_army.attack(target)
     async def attack_enem_struct(self):
+        self.assign_medivac()
         if len(self.enemy_structures) > 0:
             target = self.enemy_structures.random
             if target:
                 for idle_army in self.units.idle:
                     idle_army.attack(target)
     async def attack_enem_start(self):
+        self.assign_medivac()
         target = self.enemy_start_locations[0]
         if target:
             for idle_army in self.units.idle:
@@ -444,7 +457,9 @@ class GigaBot(BotAI):
                    9: "attack_enem_struct()",
                    10: "attack_enem_units()",
                    11: "build_factory()",
-                   12: "build_starport()"}
+                   12: "build_starport()",
+                   13: "wait()",
+                   14: "train_medivac()"}
         
         if self.timetime > self.time_to_action:
             if self.use_model:
@@ -456,22 +471,26 @@ class GigaBot(BotAI):
                 marine_weight = 1
                 marauder_weight = 1
                 scv_weight = 1
+                wait_weight = 1
 
                 prediction = self.model.predict([self.flipped.reshape([-1, 176, 200, 1])])
-                weights = [depos_weight, barracks_weight, refinery_weight, expand_weight, upgrade_weight, marine_weight, marauder_weight, scv_weight, 1, 1, 1, 1, 1]
+                weights = [depos_weight, barracks_weight, refinery_weight, expand_weight, upgrade_weight, marine_weight, marauder_weight, scv_weight, 1, 1, 1, 1, 1, wait_weight, 1]
                 weighted_prediction = prediction[0]*weights
                 choice = np.argmax(weighted_prediction)
                 print('Choice:', choices[choice])
             else:
-                depos_weight = 5
-                barracks_weight = 3
-                refinery_weight = 1
-                expand_weight = 15
-                upgrade_weight = 4
-                marine_weight = 20
-                marauder_weight = 6
-                scv_weight = 8
-                choice_weights = depos_weight*[0]+barracks_weight*[1]+refinery_weight*[2]+expand_weight*[3]+upgrade_weight*[4]+marine_weight*[5]+marauder_weight*[6]+scv_weight*[7]+1*[8]+1*[9]+1*[10]+1*[11]+1*[12]
+                depos_weight = 3#1
+                barracks_weight = 3#1
+                refinery_weight = 1#1
+                expand_weight = 3#2
+                upgrade_weight = 2#1
+                marine_weight = 3#2
+                marauder_weight = 2#1
+                scv_weight = 3#2
+                wait_weight = 2#1
+                factory_weight = 2#1
+                starport_weight = 2#1
+                choice_weights = depos_weight*[0]+barracks_weight*[1]+refinery_weight*[2]+expand_weight*[3]+upgrade_weight*[4]+marine_weight*[5]+marauder_weight*[6]+scv_weight*[7]+1*[8]+1*[9]+1*[10]+factory_weight*[11]+starport_weight*[12]+wait_weight*[13]+1*[14]
                 choice = random.choice(choice_weights)
 
             try:
@@ -479,7 +498,7 @@ class GigaBot(BotAI):
             except Exception as e:
                 print(str(e))
 
-            y = np.zeros(13)
+            y = np.zeros(15)
             y[choice] = 1
             self.train_data.append([y, self.flipped])
 
@@ -488,6 +507,6 @@ USING_MODEL = False
 if USING_MODEL: 
     print("USING MODEL") 
 else: print("USING RANDOM CHOICES")
-while True:
-    run_game(maps.get("AbyssalReefLE"), [Bot(Race.Terran, GigaBot(use_model=USING_MODEL)), Computer(Race.Zerg, Difficulty.Medium)], realtime=False)
+#while True:
+run_game(maps.get("AbyssalReefLE"), [Bot(Race.Terran, GigaBot(use_model=USING_MODEL)), Computer(Race.Zerg, Difficulty.Medium)], realtime=False)
 
