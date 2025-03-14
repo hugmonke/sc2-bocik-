@@ -1,9 +1,6 @@
-# WIP STARCRAFT 2 AI
+# Engineering Thesis Code (WIP)
 
-The working Bot is written in file main.py.
-It is currently able to defeat HARD Zerg AI.
-The plan is to explore the API's possibilites and functions.
-The goal of the project is to use reinforcement learning to train the bot.
-
-To use the bot you need to follow instructions at:
-https://github.com/BurnySc2/python-sc2
+Here are two attempts at developing AI for StarCraft 2. 
+One approach uses Convolutional Neural Networks, while the other employs Proximal Policy Optimization. 
+Only the latter proved successful. The code serves as a foundation for future enhancements and experimentation.
+And yes, I know, it needs refactoring :(
