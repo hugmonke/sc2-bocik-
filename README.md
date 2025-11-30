@@ -4,7 +4,7 @@ A StarCraft II AI bot using Proximal Policy Optimization (PPO) from Stable-Basel
 
 ## Overview
 
-This project implements a reinforcement learning agent that plays StarCraft II using the PySC2 library. The bot currently uses a combination of hardcoded strategies and learned behaviors through PPO. The long-term goal is to develop a fully autonomous agent capable of making all possible in-game decisions.
+This project implements a reinforcement learning agent that plays StarCraft II using the BurnySC2 library. The bot currently uses a combination of hardcoded strategies and learned behaviors through PPO. The long-term goal is to develop a fully autonomous agent capable of making all possible in-game decisions.
 
 ## Features
 
